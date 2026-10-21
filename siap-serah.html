@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Siap Serah</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: satu kolom "map berkas" — ringkasan status di atas, daftar dokumen (yang kurang lebih dulu), lalu lembar serah terima */
+:root {
+  --bg: #eef1f4;
+  --paper: #ffffff;
+  --ink: #18202b;
+  --muted: #5d6877;
+  --line: #d5dbe3;
+  --accent: #1f4fd1;
+  --accent-ink: #ffffff;
+  --ok: #157a46;   --ok-bg: #e2f4ea;
+  --warn: #9a6100; --warn-bg: #fdf0d6;
+  --bad: #b42318;  --bad-bg: #fde5e2;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161c; --paper: #1b212a; --ink: #e8edf3; --muted: #9aa6b5; --line: #2e3744;
+  --accent: #7aa2ff; --accent-ink: #0d1424;
+  --ok: #5fd39a; --ok-bg: #143324; --warn: #f2bf5e; --warn-bg: #3a2c10; --bad: #ff8a7a; --bad-bg: #3d1a17;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #12161c; --paper: #1b212a; --ink: #e8edf3; --muted: #9aa6b5; --line: #2e3744;
+  --accent: #7aa2ff; --accent-ink: #0d1424;
+  --ok: #5fd39a; --ok-bg: #143324; --warn: #f2bf5e; --warn-bg: #3a2c10; --bad: #ff8a7a; --bad-bg: #3d1a17;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 20px; }
+h1, h2 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.9rem, 6vw, 2.6rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+h2 { font-size: 1.15rem; font-weight: 600; }
+.mono { font-family: var(--f-mono); font-size: 0.82rem; }
+.eyebrow { font-family: var(--f-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+button { font: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header { display: grid; gap: 6px; }
+.company { color: var(--muted); }
+.sample { display: inline-block; font-family: var(--f-mono); font-size: 0.72rem; padding: 2px 8px; border: 1px dashed var(--muted); border-radius: 4px; color: var(--muted); width: fit-content; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tab { border: 1px solid var(--line); background: var(--paper); color: var(--ink); padding: 8px 14px; border-radius: 999px; }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.summary { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 14px; }
+.summary-top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; }
+.big { font-family: var(--f-display); font-weight: 800; font-size: clamp(2.4rem, 10vw, 3.4rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.big small { font-size: 0.45em; font-weight: 600; color: var(--muted); }
+.meta { display: grid; gap: 2px; text-align: right; }
+.meta strong { font-variant-numeric: tabular-nums; }
+.bar { height: 12px; border-radius: 999px; background: var(--bad-bg); overflow: hidden; display: flex; }
+.bar span { display: block; height: 100%; transition: width .3s ease; }
+.bar .b-ok { background: var(--ok); } .bar .b-warn { background: var(--warn); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--muted); font-size: 0.85rem; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+.list { display: grid; gap: 10px; }
+.doc { background: var(--paper); border: 1px solid var(--line); border-left: 5px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; align-items: center; }
+.doc[data-s="kurang"] { border-left-color: var(--bad); }
+.doc[data-s="cek"] { border-left-color: var(--warn); }
+.doc[data-s="ada"] { border-left-color: var(--ok); }
+.doc-main { min-width: 0; display: grid; gap: 2px; }
+.doc-name { font-weight: 600; }
+.doc-note { color: var(--muted); font-size: 0.88rem; }
+.doc-file { color: var(--muted); overflow-wrap: anywhere; }
+.chip { border: 0; border-radius: 6px; padding: 7px 12px; font-family: var(--f-mono); font-size: 0.78rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.chip[data-s="kurang"] { background: var(--bad-bg); color: var(--bad); }
+.chip[data-s="cek"] { background: var(--warn-bg); color: var(--warn); }
+.chip[data-s="ada"] { background: var(--ok-bg); color: var(--ok); }
+.hint { color: var(--muted); font-size: 0.85rem; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { border: 1px solid var(--line); background: var(--paper); color: var(--ink); padding: 11px 18px; border-radius: 8px; font-weight: 600; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+.sheet { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 24px; display: grid; gap: 16px; }
+.sheet-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+.stamp { font-family: var(--f-display); font-weight: 800; font-size: 0.95rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 12px; border: 3px solid currentColor; border-radius: 6px; transform: rotate(-4deg); align-self: center; }
+.stamp.ready { color: var(--ok); } .stamp.notready { color: var(--bad); }
+.sheet h3 { font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+.sheet ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.sheet .sign { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; padding-top: 12px; }
+.sign div { border-top: 1px solid var(--muted); padding-top: 6px; color: var(--muted); font-size: 0.85rem; }
+.toast { color: var(--ok); font-size: 0.85rem; min-height: 1.2em; }
+
+@media (max-width: 480px) { .meta { text-align: left; } .doc { grid-template-columns: 1fr; } .chip { justify-self: start; } }
+@media (prefers-reduced-motion: reduce) { .bar span { transition: none; } }
+@media print {
+  body { background: #fff; color: #000; padding: 0; }
+  .no-print { display: none !important; }
+  .sheet { border: 0; padding: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="no-print">
+    <span class="eyebrow">Siap Serah · cek kelengkapan berkas pajak</span>
+    <h1 id="title">Berkas pajak</h1>
+    <span class="company" id="company"></span>
+    <span class="sample">Data contoh untuk demo</span>
+  </header>
+
+  <nav class="tabs no-print" id="tabs" role="tablist" aria-label="Jenis pajak"></nav>
+
+  <section class="summary no-print" aria-live="polite">
+    <div class="summary-top">
+      <div>
+        <div class="eyebrow">Dokumen siap</div>
+        <div class="big" id="count"></div>
+      </div>
+      <div class="meta">
+        <span class="eyebrow">Diserahkan ke petugas pajak</span>
+        <strong id="due"></strong>
+        <span class="hint" id="daysleft"></span>
+      </div>
+    </div>
+    <div class="bar" aria-hidden="true"><span class="b-ok" id="bar-ok"></span><span class="b-warn" id="bar-warn"></span></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--ok)"></i><span id="n-ada"></span> ada</span>
+      <span><i class="dot" style="background:var(--warn)"></i><span id="n-cek"></span> perlu dicek</span>
+      <span><i class="dot" style="background:var(--bad)"></i><span id="n-kurang"></span> masih kurang</span>
+    </div>
+  </section>
+
+  <section class="no-print" style="display:grid;gap:10px">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline">
+      <h2>Daftar dokumen</h2>
+      <span class="hint">Klik status untuk mengubah: Kurang → Perlu dicek → Ada</span>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <div class="actions no-print">
+    <button class="btn btn-primary" id="btn-sheet" type="button">Buat lembar serah terima</button>
+    <button class="btn" id="btn-reset" type="button">Kembalikan data contoh</button>
+  </div>
+
+  <section class="sheet" id="sheet" hidden>
+    <div class="sheet-head">
+      <div>
+        <div class="eyebrow">Lembar serah terima berkas</div>
+        <h2 id="s-title"></h2>
+        <div class="hint" id="s-meta"></div>
+      </div>
+      <div class="stamp" id="s-stamp"></div>
+    </div>
+    <div><h3>Sudah ada</h3><ul id="s-ada"></ul></div>
+    <div><h3>Perlu dicek bersama</h3><ul id="s-cek"></ul></div>
+    <div><h3>Masih kurang</h3><ul id="s-kurang"></ul></div>
+    <div class="sign"><div>Diserahkan oleh (Admin)</div><div>Diterima oleh (Petugas pajak)</div></div>
+    <div class="actions no-print">
+      <button class="btn" id="btn-copy" type="button">Salin ringkasan</button>
+      <button class="btn" id="btn-print" type="button" hidden>Cetak / simpan PDF</button>
+    </div>
+    <div class="toast no-print" id="toast" role="status"></div>
+  </section>
+</div>
+
+<script>
+// ===== DATA CONTOH (dummy) — ubah sesuai kebutuhan =====
+const COMPANY = "CV Sinar Makmur Abadi · NPWP 01.234.567.8-901.000 (fiktif)";
+const DATA = {
+  ppn: {
+    label: "PPN Masa", period: "Masa Oktober 2026", due: "2026-11-20",
+    docs: [
+      { name: "Faktur Pajak Keluaran", note: "42 faktur penjualan", file: "faktur_keluaran_okt2026.pdf", s: "ada" },
+      { name: "Faktur Pajak Masukan", note: "18 faktur dari pemasok", file: "faktur_masukan_okt2026.pdf", s: "cek" },
+      { name: "Rekap Penjualan", note: "Total Rp 486.250.000", file: "rekap_penjualan_okt.xlsx", s: "ada" },
+      { name: "Rekap Pembelian", note: "Total Rp 213.900.000", file: "rekap_pembelian_okt.xlsx", s: "ada" },
+      { name: "Bukti Setor / Billing PPN", note: "Kode billing belum dibayar", file: "", s: "kurang" },
+      { name: "Rekening Koran", note: "Bank, periode Oktober", file: "", s: "kurang" }
+    ]
+  },
+  pph21: {
+    label: "PPh 21 Bulanan", period: "Masa Oktober 2026", due: "2026-11-08",
+    docs: [
+      { name: "Daftar Gaji Karyawan", note: "14 karyawan tetap", file: "payroll_okt2026.xlsx", s: "ada" },
+      { name: "Rekap Absensi", note: "Dasar lembur & potongan", file: "absensi_okt.xlsx", s: "ada" },
+      { name: "Data NPWP/NIK Karyawan", note: "2 karyawan baru belum lengkap", file: "data_karyawan.xlsx", s: "cek" },
+      { name: "Bukti Potong PPh 21", note: "Untuk 14 karyawan", file: "", s: "kurang" },
+      { name: "Bukti Setor PPh 21", note: "", file: "", s: "kurang" }
+    ]
+  },
+  tahunan: {
+    label: "SPT Tahunan Badan", period: "Tahun Pajak 2025", due: "2026-11-30",
+    docs: [
+      { name: "Laporan Laba Rugi", note: "Januari–Desember 2025", file: "laba_rugi_2025.pdf", s: "ada" },
+      { name: "Neraca", note: "Per 31 Desember 2025", file: "neraca_2025.pdf", s: "ada" },
+      { name: "Rekening Koran 12 Bulan", note: "Baru ada Jan–Sep", file: "rekkoran_2025_partial.pdf", s: "cek" },
+      { name: "Daftar Aset & Penyusutan", note: "", file: "aset_2025.xlsx", s: "ada" },
+      { name: "Bukti Potong dari Pihak Lain", note: "PPh 23 dari 3 pelanggan", file: "", s: "kurang" },
+      { name: "Bukti Setor PPh 25", note: "12 masa", file: "bukti_setor_pph25_2025.pdf", s: "ada" },
+      { name: "Akta & Perubahan Pengurus", note: "Jika ada perubahan", file: "akta_pendirian.pdf", s: "ada" }
+    ]
+  }
+};
+// =======================================================
+
+const LABEL = { ada: "Ada", cek: "Perlu dicek", kurang: "Kurang" };
+const NEXT = { kurang: "cek", cek: "ada", ada: "kurang" };
+const ORDER = { kurang: 0, cek: 1, ada: 2 };
+const KEY = "siap-serah-v1";
+const clone = o => JSON.parse(JSON.stringify(o));
+let state = load() || { tab: "ppn", data: clone(DATA) };
+
+function load() { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmtDate = iso => new Date(iso + "T00:00:00").toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
+function render() {
+  const set = state.data[state.tab];
+  $("company").textContent = COMPANY;
+  $("title").textContent = set.label + " · " + set.period;
+  $("tabs").innerHTML = Object.entries(state.data).map(([k, v]) =>
+    `<button class="tab" role="tab" type="button" data-tab="${k}" aria-selected="${k === state.tab}">${esc(v.label)}</button>`).join("");
+
+  const n = { ada: 0, cek: 0, kurang: 0 };
+  set.docs.forEach(d => n[d.s]++);
+  const total = set.docs.length;
+  $("count").innerHTML = `${n.ada}<small> / ${total}</small>`;
+  $("bar-ok").style.width = (n.ada / total * 100) + "%";
+  $("bar-warn").style.width = (n.cek / total * 100) + "%";
+  $("n-ada").textContent = n.ada; $("n-cek").textContent = n.cek; $("n-kurang").textContent = n.kurang;
+  $("due").textContent = fmtDate(set.due);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const days = Math.round((new Date(set.due + "T00:00:00") - today) / 864e5);
+  $("daysleft").textContent = days > 0 ? `${days} hari lagi` : days === 0 ? "Hari ini" : `Lewat ${-days} hari`;
+
+  const sorted = set.docs.map((d, i) => ({ ...d, i })).sort((a, b) => ORDER[a.s] - ORDER[b.s] || a.i - b.i);
+  $("list").innerHTML = sorted.map(d => `
+    <div class="doc" data-s="${d.s}">
+      <div class="doc-main">
+        <span class="doc-name">${esc(d.name)}</span>
+        ${d.note ? `<span class="doc-note">${esc(d.note)}</span>` : ""}
+        <span class="doc-file mono">${d.file ? "📄 " + esc(d.file) : "Belum ada file"}</span>
+      </div>
+      <button class="chip" type="button" data-s="${d.s}" data-i="${d.i}" aria-label="Status ${esc(d.name)}: ${LABEL[d.s]}. Klik untuk ubah.">${LABEL[d.s]}</button>
+    </div>`).join("");
+  if (!$("sheet").hidden) renderSheet();
+}
+
+function renderSheet() {
+  const set = state.data[state.tab];
+  const by = s => set.docs.filter(d => d.s === s);
+  const li = arr => arr.length ? arr.map(d => `<li>${esc(d.name)}${d.file ? ` <span class="mono">(${esc(d.file)})</span>` : ""}${d.note ? ` · ${esc(d.note)}` : ""}</li>`).join("") : "<li>Tidak ada</li>";
+  $("s-title").textContent = set.label + " · " + set.period;
+  $("s-meta").textContent = COMPANY + " · Dibuat " + fmtDate(new Date().toISOString().slice(0, 10));
+  $("s-ada").innerHTML = li(by("ada"));
+  $("s-cek").innerHTML = li(by("cek"));
+  $("s-kurang").innerHTML = li(by("kurang"));
+  const ready = by("kurang").length === 0 && by("cek").length === 0;
+  $("s-stamp").textContent = ready ? "Siap diperiksa" : `Kurang ${by("kurang").length + by("cek").length} berkas`;
+  $("s-stamp").className = "stamp " + (ready ? "ready" : "notready");
+}
+
+function sheetText() {
+  const set = state.data[state.tab];
+  const part = (t, s) => t + ":\n" + (set.docs.filter(d => d.s === s).map(d => "- " + d.name + (d.note ? " (" + d.note + ")" : "")).join("\n") || "- Tidak ada");
+  return `Serah terima berkas ${set.label} · ${set.period}\n${COMPANY}\n\n${part("Sudah ada", "ada")}\n\n${part("Perlu dicek bersama", "cek")}\n\n${part("Masih kurang", "kurang")}`;
+}
+
+$("tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-tab]"); if (!b) return;
+  state.tab = b.dataset.tab; save(); render();
+});
+$("list").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  const d = state.data[state.tab].docs[+b.dataset.i];
+  d.s = NEXT[d.s]; save(); render();
+});
+$("btn-sheet").addEventListener("click", () => {
+  $("sheet").hidden = false; renderSheet();
+  $("sheet").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+});
+$("btn-reset").addEventListener("click", () => { state = { tab: state.tab, data: clone(DATA) }; save(); render(); });
+$("btn-copy").addEventListener("click", () => {
+  const text = sheetText();
+  const ok = () => { $("toast").textContent = "Ringkasan disalin."; };
+  const fallback = () => {
+    const r = document.createRange(); r.selectNodeContents($("sheet"));
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    $("toast").textContent = "Teks sudah diblok. Tekan Ctrl+C untuk menyalin.";
+  };
+  try { navigator.clipboard.writeText(text).then(ok, fallback); } catch (e) { fallback(); }
+});
+// Tombol cetak hanya muncul saat file dibuka langsung di browser (bukan di dalam pratinjau).
+if (window.self === window.top) { $("btn-print").hidden = false; $("btn-print").addEventListener("click", () => window.print()); }
+
+render();
+</script>
+</body>
+</html>

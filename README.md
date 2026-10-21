@@ -7,6 +7,7 @@ Situs statis sederhana (HTML, CSS, JavaScript murni) tanpa dependensi dan tanpa 
 ```
 hackathon/
 ├── index.html          # Halaman utama (header, hero, tentang, fitur, kontak, footer)
+├── siap-serah.html     # Prototipe hackathon: cek kelengkapan berkas pajak (satu file, berisi data contoh)
 ├── assets/
 │   ├── css/
 │   │   └── style.css   # Gaya global: variabel warna, mode gelap, layout responsif
@@ -18,6 +19,7 @@ hackathon/
 | Path | Fungsi |
 | --- | --- |
 | `index.html` | Titik masuk situs. Memuat `style.css` di `<head>` dan `main.js` di akhir `<body>`. |
+| `siap-serah.html` | Prototipe "Siap Serah". Mandiri (CSS, JS, dan data contoh ada di satu file). Data contoh ada di objek `DATA` di bagian `<script>`. |
 | `assets/css/style.css` | Semua styling. Warna didefinisikan sebagai variabel CSS di `:root` dan otomatis berganti saat sistem memakai mode gelap. |
 | `assets/js/main.js` | Logika interaktif. Diletakkan di akhir `<body>` agar DOM sudah siap saat skrip berjalan. |
 | `assets/` | Tempat semua aset statis. Tambahkan `assets/img/` untuk gambar bila diperlukan. |
